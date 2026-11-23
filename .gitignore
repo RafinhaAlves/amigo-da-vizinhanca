@@ -1,0 +1,17 @@
+# C / C++
+*.o
+*.out
+*.exe
+amigo_vizinhanca
+triage-queue-c/build/
+
+# Java / Spring Boot
+target/
+.mvn/
+*.jar
+
+# IDEs e Sistema
+.vscode/
+.idea/
+*.swp
+.DS_Store
