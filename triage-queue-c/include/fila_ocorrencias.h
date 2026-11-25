@@ -1,23 +1,27 @@
 #ifndef FILA_OCORRENCIAS_H
 #define FILA_OCORRENCIAS_H
-#define MAX_STR 100
-#define MAX_DESC 250
-#define ARQUIVO_DADOS "ocorrencias.txt"
 
-// entidade ocorrencia
+#include <stdbool.h>
+
+// Estrutura alinhada com a tabela OCORRENCIA e Estorias 2, 3, 5 e 6
 typedef struct {
-    int id_ocorrencia; // Protocolo (inicia em 1000, incremento de 10)
-    int id_morador;
-    char categoria[50];
-    char titulo[MAX_STR];
-    char descricao[MAX_DESC];
-    char endereco_problema[MAX_STR];
-    char data_registro[20];
-    char status[20]; // "Pendente", "Em Andamento", "Concluido", "Cancelado"
-    char solucao_descricao[MAX_DESC];
+    int id_ocorrencia;           // Protocolo unico (IDENTITY 1000, 10)
+    int id_morador;              // FK: Morador solicitante
+    int id_categoria;            // FK: Categoria do problema
+    int id_equipe;               // FK: Equipe atribuida (0 = Nenhuma)
+    char titulo[100];
+    char descricao[300];
+    char endereco_problema[200];
+    char data_registro[25];      // Automatico: dd/mm/aaaa HH:MM (Estoria 2)
+    char status[20];             // Pendente, Em Andamento, Concluido, Cancelado
+    char prioridade[15];         // Baixa, Media, Alta (Estoria 3)
+    char data_atribuicao[25];    // Automatico ao atribuir equipe (Estoria 3)
+    char prazo_estimado[15];     // Data prevista: dd/mm/aaaa (Estoria 3)
+    char solucao_descricao[300]; // Obrigatorio ao concluir (Estoria 5)
+    char data_conclusao[25];     // Automatico ao concluir (Estoria 5)
 } Ocorrencia;
 
-// estrutura da fila dinâmica
+// TAD: Fila Sequencial Dinamica (Alocacao Contigua na Heap)
 typedef struct {
     Ocorrencia *dados;
     int tamanho;
@@ -25,30 +29,31 @@ typedef struct {
     int proximo_protocolo;
 } FilaOcorrencias;
 
-// gerenciamento de memória
-void inicializarFila(FilaOcorrencias *fila, int capacidadeInicial);
+// Ciclo de Vida e Memoria
+FilaOcorrencias* criarFila(int capacidade_inicial);
 void liberarFila(FilaOcorrencias *fila);
 
-// persistência em arquivo
-void salvarFilaEmArquivo(const FilaOcorrencias *fila, const char *nomeArquivo);
-void carregarFilaDeArquivo(FilaOcorrencias *fila, const char *nomeArquivo);
+// Operacoes Fundamentais (FIFO)
+bool enfileirarOcorrencia(FilaOcorrencias *fila, Ocorrencia nova);
+bool desenfileirarOcorrencia(FilaOcorrencias *fila, Ocorrencia *removida);
 
-// operações de fila (FIFO - First-In, First-Out) e CRUD
-int enfileirarOcorrencia(FilaOcorrencias *fila, int id_morador, const char *categoria, const char *titulo, const char *descricao, const char *endereco, const char *data, int silencioso);
-int desenfileirarOcorrencia(FilaOcorrencias *fila, Ocorrencia *removida);
+// Visualizacao, Filtros e Fluxo de Status (Estorias 3, 5 e 6)
 void listarOcorrencias(const FilaOcorrencias *fila);
+void filtrarOcorrencias(const FilaOcorrencias *fila);
+void exibirDetalhesOcorrencia(const Ocorrencia *oc);
 void atualizarStatusOcorrencia(FilaOcorrencias *fila, int protocolo);
-void removerOcorrenciaPorProtocolo(FilaOcorrencias *fila, int protocolo);
 
-// algoritmos de ordenação e busca binária
-void ordenarPorProtocolo(FilaOcorrencias *fila);
-void ordenarPorTitulo(FilaOcorrencias *fila);
-int buscaBinariaProtocolo(FilaOcorrencias *fila, int protocolo);
+// Algoritmos de Ordenacao e Busca
+void ordenarPorProtocolo(FilaOcorrencias *fila);      // Bubble Sort
+void ordenarPorTitulo(FilaOcorrencias *fila);         // Selection Sort
+void ordenarPorDataRecente(FilaOcorrencias *fila);    // Selection Sort (Estoria 6)
+int buscarPorProtocoloBinaria(FilaOcorrencias *fila, int protocolo);
 
-// utilitários de entrada e carga inicial
-void limparBuffer(void);
-void lerString(char *destino, int tamanho);
-void lerStringObrigatoria(const char *rotulo, char *destino, int tamanho);
-void carregarDadosExemplo(FilaOcorrencias *fila);
+// Persistencia em Disco (.txt)
+bool salvarFilaEmArquivo(const FilaOcorrencias *fila, const char *caminho);
+bool carregarFilaDeArquivo(FilaOcorrencias *fila, const char *caminho);
+
+// Utilitario de Entrada Segura
+void lerStringObrigatoria(const char *prompt, char *destino, int tamanho_max);
 
 #endif
