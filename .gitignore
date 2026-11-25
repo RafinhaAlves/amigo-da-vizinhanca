@@ -4,6 +4,7 @@
 *.exe
 amigo_vizinhanca
 triage-queue-c/build/
+ocorrencias.txt
 
 # Java / Spring Boot
 target/
